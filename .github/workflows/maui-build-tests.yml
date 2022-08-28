@@ -6,15 +6,37 @@ concurrency:
 env:
   RELEASE_TAG: Canary
 jobs:
-  main:
+  windowsBuild:
+    strategy:
+      matrix:
+        platform: [ x64, x86, arm64 ]
     runs-on: windows-latest
-    permissions:
-      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
         with:
-          submodules: true
+          dotnet-version: 6.0.x
+      - name: Install Workloads
+        run: |
+          dotnet workload install maui-windows
+      - name: Publish Project
+        run: |
+          dotnet publish -f net6.0-windows10.0.19041.0 -c Release -p:Platform=${{ matrix.platform }} -p:RuntimeIdentifier=win10-${{ matrix.platform }} -p:GenerateAppxPackageOnBuild=true -p:AppxPackageDir=..\packages\
+          $artifact = (Get-ChildItem packages/*_Test/*.msix).FullName | Select-Object -First 1
+          New-Item -ItemType Directory artifacts
+          Move-Item $artifact artifacts/${{ github.event.repository.name }}_windows-${{ matrix.platform }}.msix
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Packages
+          path: artifacts
+  androidBuild:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
@@ -24,36 +46,54 @@ jobs:
         with:
           distribution: microsoft
           java-version: 11
-      - name: Install MAUI Workloads
+      - name: Install Workloads
         run: |
-          dotnet workload install maui
+          dotnet workload install maui-android
           dotnet workload install android
       - name: Publish Project
         run: |
-          $bytes = [System.Convert]::FromBase64String("${{ secrets.SIGNING_CERTIFICATE }}")
-          [IO.File]::WriteAllBytes("certificate.pfx", $bytes)
-          $password = ConvertTo-SecureString -String ${{ secrets.SIGNING_KEY }} -AsPlainText
-          Import-PfxCertificate -FilePath certificate.pfx -CertStoreLocation "Cert:\CurrentUser\My" -Password $password
-          $thumbprint = (Get-PfxCertificate -FilePath Certificate.pfx -Password $password).Thumbprint
-          dotnet publish Otakulore/Otakulore.csproj -f net6.0-windows10.0.19041.0 -c Release -p:ApplicationVersion=${{ github.run_number }} -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true -p:PackageCertificateThumbprint=$thumbprint
-          dotnet publish Otakulore/Otakulore.csproj -f net6.0-android -c Release -p:ApplicationVersion=${{ github.run_number }}
-      - name: Package Artifacts
+          dotnet publish -f net6.0-android -c Release -o build
+          $artifact = (Get-ChildItem build/*.apk).FullName | Select-Object -First 1
+          New-Item -ItemType Directory artifacts
+          Move-Item $artifact artifacts/${{ github.event.repository.name }}_android.apk
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Packages
+          path: artifacts
+  release:
+    needs: [ windowsBuild, androidBuild ]
+    permissions:
+      contents: write
+    runs-on: windows-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: Packages
+          path: artifacts
+      - id: artifacts
+        name: Check Artifacts
         run: |
-          $windowsArtifacts = (Get-ChildItem -Recurse -Path Otakulore/bin/Release/net*-windows*/**/AppPackages/* -Filter *.msix -Exclude *WindowsAppRuntime*.msix).FullName
-          $androidArtifacts = (Get-ChildItem -Recurse -Path Otakulore/bin/Release/net*-android -Filter *.apk).FullName
-          Compress-Archive -Path $windowsArtifacts -DestinationPath ${{ github.event.repository.name }}-windows.zip
-          Compress-Archive -Path $androidArtifacts -DestinationPath ${{ github.event.repository.name }}-android.zip
+          $artifacts = (Get-ChildItem -Recurse -File artifacts).FullName
+          $artifactList = ""
+          foreach ($artifact in $artifacts) {
+            if ($artifactList.Length -gt 0) {
+              $artifactList += ","
+            }
+            $artifactList += $artifact
+          }
+          Write-Output "::set-output name=RELEASE_ARTIFACTS::$artifactList"
       - name: Delete (Existing) Release Tag
         uses: dev-drprasad/delete-tag-and-release@v0.2.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.RELEASE_TAG }}
-          delete_release: true
-      - name: Deploy Release
+      - name: Release Artifacts
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "${{ github.event.repository.name }}-windows.zip,${{ github.event.repository.name }}-android.zip"
+          artifacts: ${{ steps.artifacts.outputs.RELEASE_ARTIFACTS }}
           prerelease: true
           tag: ${{ env.RELEASE_TAG }}
           commit: ${{ github.event.repository.default_branch }}
