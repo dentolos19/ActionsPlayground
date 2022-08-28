@@ -1,7 +1,7 @@
 name: WinAppSdk Build Tests
 on: [ workflow_dispatch ]
 concurrency:
-  group: release
+  group: workflow
   cancel-in-progress: true
 env:
   RELEASE_TAG: Canary
