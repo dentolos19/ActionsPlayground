@@ -1,0 +1,59 @@
+name: MAUI Build Tests
+on: [ workflow_dispatch ]
+concurrency:
+  group: release
+  cancel-in-progress: true
+env:
+  RELEASE_TAG: Canary
+jobs:
+  main:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: microsoft
+          java-version: 11
+      - name: Install MAUI Workloads
+        run: |
+          dotnet workload install maui
+          dotnet workload install android
+      - name: Publish Project
+        run: |
+          $bytes = [System.Convert]::FromBase64String("${{ secrets.SIGNING_CERTIFICATE }}")
+          [IO.File]::WriteAllBytes("certificate.pfx", $bytes)
+          $password = ConvertTo-SecureString -String ${{ secrets.SIGNING_KEY }} -AsPlainText
+          Import-PfxCertificate -FilePath certificate.pfx -CertStoreLocation "Cert:\CurrentUser\My" -Password $password
+          $thumbprint = (Get-PfxCertificate -FilePath Certificate.pfx -Password $password).Thumbprint
+          dotnet publish Otakulore/Otakulore.csproj -f net6.0-windows10.0.19041.0 -c Release -p:ApplicationVersion=${{ github.run_number }} -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true -p:PackageCertificateThumbprint=$thumbprint
+          dotnet publish Otakulore/Otakulore.csproj -f net6.0-android -c Release -p:ApplicationVersion=${{ github.run_number }}
+      - name: Package Artifacts
+        run: |
+          $windowsArtifacts = (Get-ChildItem -Recurse -Path Otakulore/bin/Release/net*-windows*/**/AppPackages/* -Filter *.msix -Exclude *WindowsAppRuntime*.msix).FullName
+          $androidArtifacts = (Get-ChildItem -Recurse -Path Otakulore/bin/Release/net*-android -Filter *.apk).FullName
+          Compress-Archive -Path $windowsArtifacts -DestinationPath ${{ github.event.repository.name }}-windows.zip
+          Compress-Archive -Path $androidArtifacts -DestinationPath ${{ github.event.repository.name }}-android.zip
+      - name: Delete (Existing) Release Tag
+        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          delete_release: true
+      - name: Deploy Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "${{ github.event.repository.name }}-windows.zip,${{ github.event.repository.name }}-android.zip"
+          prerelease: true
+          tag: ${{ env.RELEASE_TAG }}
+          commit: ${{ github.event.repository.default_branch }}

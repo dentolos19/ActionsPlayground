@@ -1,0 +1,67 @@
+name: WinAppSdk Build Tests
+on: [ workflow_dispatch ]
+concurrency:
+  group: release
+  cancel-in-progress: true
+env:
+  RELEASE_TAG: Canary
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform: [ x64, x86, arm64 ]
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
+      - name: Publish Project
+        run: |
+          dotnet publish -c Release -p:Platform=${{ matrix.platform }} -p:RuntimeIdentifier=win10-${{ matrix.platform }} -p:GenerateAppxPackageOnBuild=true -p:AppxPackageDir=..\packages\
+          $artifact = (Get-ChildItem packages/*_Test/*.msix).FullName | Select-Object -First 1
+          New-Item -ItemType Directory artifacts
+          Move-Item $artifact artifacts/${{ github.event.repository.name }}_${{ matrix.platform }}.msix
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Packages
+          path: artifacts
+  release:
+    needs: build
+    permissions:
+      contents: write
+    runs-on: windows-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: Packages
+          path: artifacts
+      - id: artifacts
+        name: Check Artifacts
+        run: |
+          $artifacts = (Get-ChildItem -Recurse -File artifacts).FullName
+          $artifactList = ""
+          foreach ($artifact in $artifacts) {
+            if ($artifactList.Length -gt 0) {
+              $artifactList += ","
+            }
+            $artifactList += $artifact
+          }
+          Write-Output "::set-output name=RELEASE_ARTIFACTS::$artifactList"
+      - name: Delete (Existing) Release Tag
+        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+      - name: Release Artifacts
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: ${{ steps.artifacts.outputs.RELEASE_ARTIFACTS }}
+          prerelease: true
+          tag: ${{ env.RELEASE_TAG }}
+          commit: ${{ github.event.repository.default_branch }}
