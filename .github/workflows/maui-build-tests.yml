@@ -1,5 +1,5 @@
 name: MAUI Build Tests
-on: [ workflow_dispatch ]
+on: [ push, workflow_dispatch ]
 concurrency:
   group: release
   cancel-in-progress: true
@@ -7,9 +7,6 @@ env:
   RELEASE_TAG: Canary
 jobs:
   windowsBuild:
-    strategy:
-      matrix:
-        platform: [ x64, x86, arm64 ]
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
@@ -23,7 +20,7 @@ jobs:
           dotnet workload install maui-windows
       - name: Publish Project
         run: |
-          dotnet publish -f net6.0-windows10.0.19041.0 -c Release -p:Platform=${{ matrix.platform }} -p:RuntimeIdentifier=win10-${{ matrix.platform }} -p:GenerateAppxPackageOnBuild=true -p:AppxPackageDir=..\packages\
+          dotnet publish -f net6.0-windows10.0.19041.0 -c Release -p:GenerateAppxPackageOnBuild=true -p:AppxPackageDir=..\packages\
           $artifact = (Get-ChildItem packages/*_Test/*.msix).FullName | Select-Object -First 1
           New-Item -ItemType Directory artifacts
           Move-Item $artifact artifacts/${{ github.event.repository.name }}_windows-${{ matrix.platform }}.msix
@@ -48,7 +45,7 @@ jobs:
           java-version: 11
       - name: Install Workloads
         run: |
-          dotnet workload install maui-android
+          dotnet workload install maui-mobile
           dotnet workload install android
       - name: Publish Project
         run: |
