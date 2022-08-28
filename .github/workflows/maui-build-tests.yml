@@ -17,7 +17,7 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install Workloads
         run: |
-          dotnet workload install maui-windows
+          dotnet workload install maui
       - name: Publish Project
         run: |
           dotnet publish -f net6.0-windows10.0.19041.0 -c Release -p:GenerateAppxPackageOnBuild=true -p:AppxPackageDir=..\packages\
@@ -45,7 +45,7 @@ jobs:
           java-version: 11
       - name: Install Workloads
         run: |
-          dotnet workload install maui-mobile
+          dotnet workload install maui
           dotnet workload install android
       - name: Publish Project
         run: |
