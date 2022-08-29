@@ -1,10 +1,10 @@
-name: WinAppSdk Build Tests
+name: Build WinAppSdk
 on: [ workflow_dispatch ]
 concurrency:
   group: workflow
   cancel-in-progress: true
 env:
-  RELEASE_TAG: Canary
+  RELEASE_TAG: Canary-WinAppSdk
 jobs:
   build:
     strategy:

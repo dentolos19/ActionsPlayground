@@ -1,10 +1,10 @@
-name: .NET MAUI Build Tests
-on: [ push, workflow_dispatch ]
+name: Build .NET MAUI
+on: [ workflow_dispatch ]
 concurrency:
   group: workflow
   cancel-in-progress: true
 env:
-  RELEASE_TAG: Canary
+  RELEASE_TAG: Canary-MAUI
 jobs:
   windowsBuild:
     runs-on: windows-latest
