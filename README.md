@@ -1,3 +1,7 @@
 # Actions Playground
 
-This repository is only meant for testing actions to be used in my other projects.
+A repository to test actions to be used in my other projects!
+
+- Build Workflows
+  - [Build .NET MAUI](.github/workflows/build-maui.yml)
+  - [Build WinAppSdk](.github/workflows/build-winappsdk.yml)
