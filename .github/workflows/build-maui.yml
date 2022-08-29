@@ -9,6 +9,7 @@ env:
   RELEASE_TAG: Canary-MAUI
 jobs:
   windowsBuild:
+    continue-on-error: true
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
@@ -37,7 +38,7 @@ jobs:
           SIGNING_KEY: temporary
       - name: Publish Project
         run: |
-          dotnet publish ${{ env.PROJECT_FILE }} -f net6.0-windows10.0.19041.0 -c Release -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true -p:PackageCertificateThumbprint=${{ steps.certificate.outputs.SIGNING_THUMBPRINT }} -p:AppxPackageDir=${{ github.workspace }}/packages
+          dotnet publish ${{ env.PROJECT_FILE }} -f net6.0-windows10.0.19041.0 -c Release -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true -p:PackageCertificateThumbprint=${{ steps.certificate.outputs.SIGNING_THUMBPRINT }} -p:AppxPackageDir=${{ github.workspace }}/packages/
           $artifact = (Get-ChildItem ${{ github.workspace }}/packages/*_Test/*.msix).FullName | Select-Object -First 1
           New-Item -ItemType Directory artifacts
           Move-Item $artifact artifacts/${{ github.event.repository.name }}_windows.msix
@@ -47,6 +48,7 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: artifacts
   androidBuild:
+    continue-on-error: true
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
