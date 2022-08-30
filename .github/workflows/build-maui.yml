@@ -1,5 +1,9 @@
 name: Build .NET MAUI
-on: [ workflow_dispatch ]
+on: # change this when using this in a project
+  push:
+    paths:
+      - .github/workflows/build-maui.yml
+  workflow_dispatch:
 concurrency:
   group: workflow
   cancel-in-progress: true
@@ -40,7 +44,7 @@ jobs:
           dotnet publish ${{ env.PROJECT_FILE }} -f net6.0-windows10.0.19041.0 -c Release -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true -p:PackageCertificateThumbprint=${{ steps.certificate.outputs.SIGNING_THUMBPRINT }} -p:AppxPackageDir=${{ github.workspace }}/packages/
           $artifact = (Get-ChildItem ${{ github.workspace }}/packages/*_Test/*.msix).FullName | Select-Object -First 1
           New-Item -ItemType Directory artifacts
-          Move-Item $artifact artifacts/${{ github.event.repository.name }}_windows.msix
+          Move-Item $artifact artifacts/${{ github.event.repository.name }}_windows[System.IO.Path]::GetExtension($artifact)
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -73,7 +77,7 @@ jobs:
           dotnet publish ${{ env.PROJECT_FILE }} -f net6.0-android -c Release -o build
           $artifact = (Get-ChildItem build/*.apk).FullName | Select-Object -First 1
           New-Item -ItemType Directory artifacts
-          Move-Item $artifact artifacts/${{ github.event.repository.name }}_android.apk
+          Move-Item $artifact artifacts/${{ github.event.repository.name }}_android[System.IO.Path]::GetExtension($artifact)
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:

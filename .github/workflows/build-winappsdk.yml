@@ -1,5 +1,9 @@
 name: Build WinAppSdk
-on: [ workflow_dispatch ]
+on: # change this when using this in a project
+  push:
+    paths:
+      - .github/workflows/build-winappsdk.yml
+  workflow_dispatch:
 concurrency:
   group: workflow
   cancel-in-progress: true
@@ -40,7 +44,7 @@ jobs:
           dotnet publish ${{ env.PROJECT_FILE }} -c Release -p:Platform=${{ matrix.platform }} -p:RuntimeIdentifier=win10-${{ matrix.platform }} -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true -p:PackageCertificateThumbprint=${{ steps.certificate.outputs.SIGNING_THUMBPRINT }} -p:AppxPackageDir=${{ github.workspace }}/packages/
           $artifact = (Get-ChildItem ${{ github.workspace }}/packages/*_Test/*.msix).FullName | Select-Object -First 1
           New-Item -ItemType Directory artifacts
-          Move-Item $artifact artifacts/${{ github.event.repository.name }}_${{ matrix.platform }}.msix
+          Move-Item $artifact artifacts/${{ github.event.repository.name }}_${{ matrix.platform }}[System.IO.Path]::GetExtension($artifact)
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:

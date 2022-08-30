@@ -1,5 +1,9 @@
 name: Build WPF
-on: [ workflow_dispatch ]
+on: # change this when using this in a project
+  push:
+    paths:
+      - .github/workflows/build-wpf.yml
+  workflow_dispatch:
 concurrency:
   group: workflow
   cancel-in-progress: true
@@ -29,7 +33,7 @@ jobs:
           dotnet publish ${{ env.PROJECT_FILE }} -c Release -p:RuntimeIdentifier=win-${{ matrix.platform }} -p:PublishSingleFile=true -p:SelfContained=false -o build
           $artifact = (Get-ChildItem build/*.exe).FullName | Select-Object -First 1
           New-Item -ItemType Directory artifacts
-          Move-Item $artifact artifacts/${{ github.event.repository.name }}_${{ matrix.platform }}.msix
+          Move-Item $artifact artifacts/${{ github.event.repository.name }}_${{ matrix.platform }}[System.IO.Path]::GetExtension($artifact)
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
