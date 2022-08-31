@@ -5,7 +5,7 @@ on: # change this when using this in a project
       - .github/workflows/build-maui.yml
   workflow_dispatch:
 concurrency:
-  group: workflow
+  group: build-maui
   cancel-in-progress: true
 env:
   PROJECT_FILE: MauiApp1/MauiApp1.csproj

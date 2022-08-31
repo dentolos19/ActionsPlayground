@@ -5,7 +5,7 @@ on: # change this when using this in a project
       - .github/workflows/build-wpf.yml
   workflow_dispatch:
 concurrency:
-  group: workflow
+  group: build-wpf
   cancel-in-progress: true
 env:
   PROJECT_FILE: WpfApp/WpfApp.csproj

@@ -5,7 +5,7 @@ on: # change this when using this in a project
       - .github/workflows/build-winappsdk.yml
   workflow_dispatch:
 concurrency:
-  group: workflow
+  group: build-winappsdk
   cancel-in-progress: true
 env:
   PROJECT_FILE: WinApp/WinApp.csproj
