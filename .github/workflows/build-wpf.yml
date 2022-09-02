@@ -8,7 +8,7 @@ concurrency:
   group: build-wpf
   cancel-in-progress: true
 env: # change this settings when using this in a project
-  TARGET_BRANCH: template/maui # use this instead: ${{ github.event.repository.default_branch }}
+  TARGET_BRANCH: template/wpf # use this instead: ${{ github.event.repository.default_branch }}
   PROJECT_FILE: ActionsPlayground.csproj
   RELEASE_TAG: Canary-WPF
   ARTIFACT_NAME: Canary
