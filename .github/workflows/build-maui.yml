@@ -7,7 +7,8 @@ on: # change this when using this in a project
 concurrency:
   group: build-maui
   cancel-in-progress: true
-env:
+env: # change this settings when using this in a project
+  TARGET_BRANCH: template/maui # use this instead: ${{ github.event.repository.default_branch }}
   PROJECT_FILE: MauiApp/MauiApp.csproj
   RELEASE_TAG: Canary-MAUI
   ARTIFACT_NAME: Canary
@@ -57,6 +58,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
+          ref: ${{ env.TARGET_BRANCH }}
           submodules: recursive
           lfs: true
       - name: Setup .NET
@@ -118,4 +120,4 @@ jobs:
           artifacts: ${{ steps.artifacts.outputs.RELEASE_ARTIFACTS }}
           prerelease: true
           tag: ${{ env.RELEASE_TAG }}
-          commit: ${{ github.event.repository.default_branch }}
+          commit: ${{ env.TARGET_BRANCH }}
