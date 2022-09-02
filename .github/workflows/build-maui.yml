@@ -22,6 +22,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
+          ref: ${{ env.TARGET_BRANCH }}
           submodules: recursive
           lfs: true
       - name: Setup .NET
