@@ -43,7 +43,7 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: artifacts
   release:
-    if: ${{ env.RELEASE_ARTIFACTS }}
+    if: env.RELEASE_ARTIFACTS
     needs: build
     permissions:
       contents: write

@@ -94,7 +94,7 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: artifacts
   release:
-    if: ${{ env.RELEASE_ARTIFACTS }}
+    if: env.RELEASE_ARTIFACTS
     needs: [ windowsBuild, androidBuild ]
     permissions:
       contents: write
