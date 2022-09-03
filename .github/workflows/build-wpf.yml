@@ -10,8 +10,9 @@ concurrency:
 env: # change these settings when using this in a project
   TARGET_BRANCH: template/wpf # use this instead: ${{ github.event.repository.default_branch }}
   PROJECT_FILE: ActionsPlayground.csproj
-  RELEASE_TAG: Canary-WPF
   ARTIFACT_NAME: Canary
+  RELEASE_ARTIFACTS: false
+  RELEASE_TAG: Canary-WPF # used only when RELEASE_ARTIFACTS is true
 jobs:
   build:
     strategy:
@@ -42,6 +43,7 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: artifacts
   release:
+    if: ${{ env.RELEASE_ARTIFACTS }}
     needs: build
     permissions:
       contents: write
