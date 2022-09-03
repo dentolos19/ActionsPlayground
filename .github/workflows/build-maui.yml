@@ -47,7 +47,7 @@ jobs:
         run: |
           if ([string]::IsNullOrEmpty("${{ steps.certificate.outputs.SIGNING_THUMBPRINT }}")) {
             dotnet publish ${{ env.PROJECT_FILE }} -f net6.0-windows10.0.19041.0 -c Release -p:GenerateAppxPackageOnBuild=true -p:AppxPackageDir=${{ github.workspace }}/packages/
-          else {
+          } else {
             dotnet publish ${{ env.PROJECT_FILE }} -f net6.0-windows10.0.19041.0 -c Release -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true -p:PackageCertificateThumbprint=${{ steps.certificate.outputs.SIGNING_THUMBPRINT }} -p:AppxPackageDir=${{ github.workspace }}/packages/
           }
           $artifact = (Get-ChildItem ${{ github.workspace }}/packages/*_Test/*.msix).FullName | Select-Object -First 1
