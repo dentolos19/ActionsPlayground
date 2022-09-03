@@ -13,8 +13,7 @@ env: # change these settings when using this in a project
   # SIGNING_CERTIFICATE: # base64 string of certificate file
   # SIGNING_KEY: # password of certificate
   ARTIFACT_NAME: Canary
-  RELEASE_ARTIFACTS: false
-  RELEASE_TAG: Canary-MAUI # used only when RELEASE_ARTIFACTS is true
+  RELEASE_TAG: Canary-MAUI
 jobs:
   windowsBuild:
     continue-on-error: true
@@ -94,7 +93,6 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: artifacts
   release:
-    if: env.RELEASE_ARTIFACTS
     needs: [ windowsBuild, androidBuild ]
     permissions:
       contents: write
