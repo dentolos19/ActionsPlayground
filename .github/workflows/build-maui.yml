@@ -1,4 +1,4 @@
-name: Build .NET MAUI
+name: Build MAUI
 on: # change this when using this in a project
   push:
     paths:
@@ -12,8 +12,8 @@ env: # change these settings when using this in a project
   PROJECT_FILE: ActionsPlayground.csproj
   # SIGNING_CERTIFICATE: # base64 string of certificate file
   # SIGNING_KEY: # password of certificate
-  ARTIFACT_NAME: Canary
-  RELEASE_TAG: Canary-MAUI
+  ARTIFACT_NAME: Output
+  RELEASE_TAG: Build-MAUI
 jobs:
   windowsBuild:
     continue-on-error: true
