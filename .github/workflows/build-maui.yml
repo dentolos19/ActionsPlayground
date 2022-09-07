@@ -1,3 +1,10 @@
+# this workflow built for...
+# < Building .NET MAUI Applications >
+#
+# checkout my other workflow templates @ https://github.com/dentolos19/ActionsPlayground
+#
+# created by Dennise Catolos (https://github.com/dentolos19)
+
 name: Build MAUI
 on: # change this when using this in a project
   push:
