@@ -22,7 +22,6 @@ env: # change these settings when using this in a project
   # SIGNING_CERTIFICATE: # base64 string of certificate file
   # SIGNING_KEY: # password of certificate
   ARTIFACT_NAME: Output
-  RELEASE_ARTIFACT: false
   RELEASE_TAG: Build-WinAppSdk
 
 jobs:
@@ -70,7 +69,6 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: artifacts
   release:
-    if: ${{ env.RELEASE_ARTIFACT }}
     needs: build
     permissions:
       contents: write

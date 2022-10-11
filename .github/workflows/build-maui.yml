@@ -22,7 +22,6 @@ env: # change these settings when using this in a project
   # SIGNING_CERTIFICATE: # base64 string of certificate file
   # SIGNING_KEY: # password of certificate
   ARTIFACT_NAME: Output
-  RELEASE_ARTIFACT: false
   RELEASE_TAG: Build-MAUI
 
 jobs:
@@ -104,21 +103,18 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: artifacts
   release:
-    if: env.RELEASE_ARTIFACT
     needs: [ windowsBuild, androidBuild ]
     permissions:
       contents: write
     runs-on: windows-latest
     steps:
       - name: Download Artifacts
-        if: ${{ env.RELEASE_ARTIFACT }}
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: artifacts
       - id: artifacts
         name: Check Artifacts
-        if: ${{ env.RELEASE_ARTIFACT }}
         run: |
           $artifacts = (Get-ChildItem -Recurse -File artifacts).FullName
           $artifactList = ""
@@ -130,14 +126,12 @@ jobs:
           }
           Write-Output "::set-output name=RELEASE_ARTIFACTS::$artifactList"
       - name: Delete (Existing) Release Tag
-        if: ${{ env.RELEASE_ARTIFACT }}
         uses: dev-drprasad/delete-tag-and-release@v0.2.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.RELEASE_TAG }}
       - name: Release Artifacts
-        if: ${{ env.RELEASE_ARTIFACT }}
         uses: ncipollo/release-action@v1
         with:
           artifacts: ${{ steps.artifacts.outputs.RELEASE_ARTIFACTS }}
