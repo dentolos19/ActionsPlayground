@@ -14,13 +14,17 @@ on: # change this when using this in a project
 concurrency:
   group: build-maui
   cancel-in-progress: true
+
 env: # change these settings when using this in a project
   TARGET_BRANCH: template/maui # use this instead: ${{ github.event.repository.default_branch }}
+  DOTNET_VERSION: 6.0.x
   PROJECT_FILE: ActionsPlayground.csproj
   # SIGNING_CERTIFICATE: # base64 string of certificate file
   # SIGNING_KEY: # password of certificate
   ARTIFACT_NAME: Output
+  RELEASE_ARTIFACT: false
   RELEASE_TAG: Build-MAUI
+
 jobs:
   windowsBuild:
     continue-on-error: true
@@ -35,7 +39,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: ${{ env.DOTNET_VERSION }}
       - name: Install Workloads
         run: |
           dotnet workload install maui
@@ -78,7 +82,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: ${{ env.DOTNET_VERSION }}
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
@@ -100,6 +104,7 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: artifacts
   release:
+    if: env.RELEASE_ARTIFACT
     needs: [ windowsBuild, androidBuild ]
     permissions:
       contents: write

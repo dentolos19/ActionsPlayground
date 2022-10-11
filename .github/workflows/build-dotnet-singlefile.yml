@@ -1,5 +1,5 @@
 # this workflow built for...
-# < Building .NET as Single File Applications >
+# < Building .NET Applications (Single File) >
 #
 # checkout my other workflow templates @ https://github.com/dentolos19/ActionsPlayground
 #
@@ -14,12 +14,16 @@ on: # change this when using this in a project
 concurrency:
   group: build-dotnet-singlefile
   cancel-in-progress: true
+
 env: # change these settings when using this in a project
   TARGET_BRANCH: template/dotnet # use this instead: ${{ github.event.repository.default_branch }}
+  DOTNET_VERSION: 6.0.x
   PROJECT_FILE: ActionsPlayground.sln
   SELF_CONTAINED: false
   ARTIFACT_NAME: Output
+  RELEASE_ARTIFACT: false
   RELEASE_TAG: Build-DotNet-SingleFile
+
 jobs:
   build:
     strategy:
@@ -37,7 +41,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: ${{ env.DOTNET_VERSION }}
       - name: Publish Project
         run: |
           dotnet publish ${{ env.PROJECT_FILE }} -c Release -r ${{ matrix.runtime }} --sc ${{ env.SELF_CONTAINED }} -o build -p:PublishSingleFile=true
@@ -50,6 +54,7 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: artifacts
   release:
+    if: env.RELEASE_ARTIFACT
     needs: build
     permissions:
       contents: write
