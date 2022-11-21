@@ -1,28 +1,26 @@
-# this workflow built for...
-# < Building Applications made with Windows App SDK >
+# this workflow is built for...
+# < Building MSIX Applications made with Windows App SDK >
 #
 # checkout my other workflow templates @ https://github.com/dentolos19/ActionsPlayground
 #
 # created by Dennise Catolos (https://github.com/dentolos19)
 
-name: Build WinAppSdk
+name: Build WinAppSdk (Packaged)
 on: # change this when using this in a project
   push:
     paths:
       - .github/workflows/build-winappsdk.yml
   workflow_dispatch:
 concurrency:
-  group: build-winappsdk
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env: # change these settings when using this in a project
   TARGET_BRANCH: template/winappsdk # use this instead: ${{ github.event.repository.default_branch }}
   DOTNET_VERSION: 6.0.x
   PROJECT_FILE: ActionsPlayground.csproj
-  # SIGNING_CERTIFICATE: # base64 string of certificate file
-  # SIGNING_KEY: # password of certificate
   ARTIFACT_NAME: Output
-  RELEASE_TAG: Build-WinAppSdk
+  RELEASE_TAG: Build-WinAppSdk-Packaged
 
 jobs:
   build:
@@ -42,27 +40,12 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-      - id: certificate
-        name: Install Certificate
-        run: |
-          if (![string]::IsNullOrEmpty("${{ env.SIGNING_CERTIFICATE }}") -and ![string]::IsNullOrEmpty("${{ env.SIGNING_KEY }}")) {
-            $bytes = [System.Convert]::FromBase64String("${{ env.SIGNING_CERTIFICATE }}")
-            [IO.File]::WriteAllBytes("certificate.pfx", $bytes)
-            $password = ConvertTo-SecureString ${{ env.SIGNING_KEY }} -AsPlainText
-            Import-PfxCertificate certificate.pfx -CertStoreLocation "Cert:\CurrentUser\My" -Password $password
-            $thumbprint = (Get-PfxCertificate Certificate.pfx -Password $password).Thumbprint
-            Write-Output "::set-output name=SIGNING_THUMBPRINT::$thumbprint"
-          }
       - name: Publish Project
         run: |
-          if ([string]::IsNullOrEmpty("${{ steps.certificate.outputs.SIGNING_THUMBPRINT }}")) {
-            dotnet publish ${{ env.PROJECT_FILE }} -c Release -p:Platform=${{ matrix.platform }} -p:RuntimeIdentifier=win10-${{ matrix.platform }} -p:WindowsAppSdkSelfContained=true -p:GenerateAppxPackageOnBuild=true -p:AppxPackageDir=${{ github.workspace }}/packages/
-          } else {
-            dotnet publish ${{ env.PROJECT_FILE }} -c Release -p:Platform=${{ matrix.platform }} -p:RuntimeIdentifier=win10-${{ matrix.platform }} -p:WindowsAppSdkSelfContained=true -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=true -p:PackageCertificateThumbprint=${{ steps.certificate.outputs.SIGNING_THUMBPRINT }} -p:AppxPackageDir=${{ github.workspace }}/packages/
-          }
-          $artifact = (Get-ChildItem ${{ github.workspace }}/packages/*_Test/*.msix).FullName | Select-Object -First 1
+          dotnet publish ${{ env.PROJECT_FILE }} -c Release -p:Platform=${{ matrix.platform }} -p:RuntimeIdentifier=win10-${{ matrix.platform }} -p:WindowsPackageType=None -o build
+          $artifacts = (Get-ChildItem build/*).FullName
           New-Item -ItemType Directory artifacts
-          Move-Item $artifact artifacts/${{ github.event.repository.name }}_${{ matrix.platform }}.msix
+          Compress-Archive $artifacts artifacts/${{ github.event.repository.name }}-${{ matrix.platform }}.zip
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:

@@ -1,4 +1,4 @@
-# this workflow built for...
+# this workflow is built for...
 # < Building .NET Applications >
 #
 # checkout my other workflow templates @ https://github.com/dentolos19/ActionsPlayground
@@ -12,7 +12,7 @@ on: # change this when using this in a project
       - .github/workflows/build-dotnet.yml
   workflow_dispatch:
 concurrency:
-  group: build-dotnet
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env: # change these settings when using this in a project
