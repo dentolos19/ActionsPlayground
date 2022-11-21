@@ -1,0 +1,40 @@
+name: Build .NET (Setup)
+on:
+  push:
+    paths:
+      - .github/workflows/build-dotnet-setup.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.action }}
+  cancel-in-progress: true
+env:
+  TARGET_BRANCH: template/dotnet # use this instead: ${{ github.event.repository.default_branch }}
+  DOTNET_VERSION: 6.0.x
+  PROJECT_FILE: ActionsPlayground.sln
+jobs:
+  build:
+    strategy:
+      matrix:
+        runtime: [ win-x64, win-arm64 ]
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          lfs: true
+          submodules: recursive
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Build Project
+        run: |
+          dotnet publish ${{ env.PROJECT_FILE }} -c Release -r ${{ matrix.runtime }} --sc true -o build
+          New-Item -ItemType Directory artifacts/${{ matrix.runtime }}
+          Get-ChildItem -Path build/* | Move-Item -Destination artifacts/${{ matrix.runtime }}
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Output
+          path: artifacts
