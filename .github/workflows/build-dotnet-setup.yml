@@ -5,7 +5,7 @@ on:
       - .github/workflows/build-dotnet-setup.yml
   workflow_dispatch:
 concurrency:
-  group: ${{ github.action }}
+  group: build-dotnet-setup
   cancel-in-progress: true
 env:
   TARGET_BRANCH: template/dotnet # use this instead: ${{ github.event.repository.default_branch }}
