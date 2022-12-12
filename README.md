@@ -5,7 +5,7 @@ A repository to test actions to be used in my other projects!
 ## 📑 Catalog
 
 - Deployment Workflows
-  - [.NET](.github/workflows/deployments/dotnet.yml)
+  - [.NET](.github/workflows/dotnet.yml)
 - Build Workflows (Old)
   - [Build .NET](.github/workflows/old/build-dotnet.yml)
   - [Build .NET (Single File)](.github/workflows/old/build-dotnet-singlefile.yml)

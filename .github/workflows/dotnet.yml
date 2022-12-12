@@ -1,17 +1,17 @@
 name: .NET Deployment
 run-name: ".NET Deployment #${{ github.run_number }}"
-on: [ push, workflow_dispatch ]
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
-###
+### Configuration ###
 
+on: [ push, workflow_dispatch ]
 env:
   TARGET_BRANCH: template/dotnet # ${{ github.event.repository.default_branch }}
   RELEASE_TAG: DotNet
 
-###
+### Configuration ###
 
 jobs:
   build:
