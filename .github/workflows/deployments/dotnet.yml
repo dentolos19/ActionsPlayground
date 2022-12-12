@@ -17,10 +17,12 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Checkout
+      - name: Checkout Branch
         uses: actions/checkout@v3
         with:
           ref: ${{ env.TARGET_BRANCH }}
+          lfs: true
+          submodules: recursive
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
       - name: Publish Project
@@ -36,7 +38,7 @@ jobs:
           path: artifacts
   release:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Download Artifacts
         uses: actions/download-artifact@v3
