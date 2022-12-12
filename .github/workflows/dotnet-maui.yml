@@ -6,7 +6,11 @@ concurrency:
 
 ### Configuration ###
 
-on: [ push, workflow_dispatch ]
+on:
+  push:
+    paths:
+      - .github/workflows/dotnet-maui.yml
+  workflow_dispatch:
 env:
   TARGET_BRANCH: template/maui # ${{ github.event.repository.default_branch }}
   PROJECT_FILE: ActionsPlayground.sln
@@ -95,7 +99,7 @@ jobs:
           name: Output
           path: artifacts
   deploy:
-    needs: build
+    needs: [ windowsBuild, androidBuild ]
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifacts
