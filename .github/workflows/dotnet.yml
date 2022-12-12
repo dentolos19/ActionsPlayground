@@ -9,6 +9,7 @@ concurrency:
 on: [ push, workflow_dispatch ]
 env:
   TARGET_BRANCH: template/dotnet # ${{ github.event.repository.default_branch }}
+  PROJECT_FILE: ActionsPlayground.sln
   RELEASE_TAG: DotNet
 
 ### Configuration ###
@@ -27,7 +28,7 @@ jobs:
         uses: actions/setup-dotnet@v2
       - name: Publish Project
         run: |
-          dotnet publish --configuration Release --output build
+          dotnet publish ${{ env.PROJECT_FILE }} --configuration Release --output build
           $artifacts = (Get-ChildItem -Path build/*).FullName
           New-Item -Path artifacts -ItemType Directory
           Compress-Archive -Path $artifacts -DestinationPath artifacts/${{ github.event.repository.name }}.zip
@@ -36,7 +37,7 @@ jobs:
         with:
           name: Output
           path: artifacts
-  release:
+  deploy:
     needs: build
     runs-on: windows-latest
     steps:
@@ -66,7 +67,7 @@ jobs:
           delete_release: true
           delete_draft_release: true
       - name: Release Artifacts
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v1.12.0
         with:
           artifacts: ${{ steps.artifacts.outputs.ARTIFACTS }}
           prerelease: true
