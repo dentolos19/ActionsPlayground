@@ -52,6 +52,14 @@ jobs:
         with:
           name: Output
           path: artifacts
+      - name: Delete (Existing) Releases
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          delete_release: true
+          delete_draft_release: true
       - name: Release Artifacts
         uses: softprops/action-gh-release@v0.1.15
         with:

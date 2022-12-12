@@ -59,7 +59,7 @@ jobs:
           }
           $artifact = (Get-ChildItem ${{ github.workspace }}/packages/*_Test/*.msix).FullName | Select-Object -First 1
           New-Item -Path artifacts -ItemType Directory
-          Move-Item -Path $artifact -DestinationPath artifacts/${{ github.event.repository.name }}_windows.msix
+          Move-Item -Path $artifact -Destination artifacts/${{ github.event.repository.name }}_windows.msix
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -92,13 +92,14 @@ jobs:
           dotnet publish ${{ env.PROJECT_FILE }} --framework ${{ env.ANDROID_TARGET_FRAMEWORK }} --configuration Release --output build
           $artifact = (Get-ChildItem build/*.apk).FullName | Select-Object -First 1
           New-Item -Path artifacts -ItemType Directory
-          Move-Item -Path $artifact -DestinationPath artifacts/${{ github.event.repository.name }}_android.apk
+          Move-Item -Path $artifact -Destination artifacts/${{ github.event.repository.name }}_android.apk
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: Output
           path: artifacts
   deploy:
+    name: Deploy
     needs: [ windowsBuild, androidBuild ]
     runs-on: ubuntu-latest
     steps:
@@ -107,6 +108,14 @@ jobs:
         with:
           name: Output
           path: artifacts
+      - name: Delete (Existing) Releases
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          delete_release: true
+          delete_draft_release: true
       - name: Release Artifacts
         uses: softprops/action-gh-release@v0.1.15
         with:
