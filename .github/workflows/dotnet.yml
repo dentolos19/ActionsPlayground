@@ -1,0 +1,72 @@
+name: .NET Deployment
+run-name: ".NET Deployment #${{ github.run_number }}"
+on: [ push, workflow_dispatch ]
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+###
+
+env:
+  TARGET_BRANCH: template/dotnet # ${{ github.event.repository.default_branch }}
+  RELEASE_TAG: DotNet
+
+###
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+      - name: Publish Project
+        run: |
+          dotnet publish --configuration Release --output build
+          $artifacts = (Get-ChildItem -Path build/*).FullName
+          New-Item -Path artifacts -ItemType Directory
+          Compress-Archive -Path $artifacts -DestinationPath artifacts/${{ github.event.repository.name }}.zip
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Output
+          path: artifacts
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: Output
+          path: artifacts
+      - id: artifacts
+        name: Check Artifacts
+        run: |
+          $artifacts = (Get-ChildItem -Path artifacts -File -Recurse).FullName
+          $artifactList = ""
+          foreach ($artifact in $artifacts) {
+            if ($artifactList.Length -gt 0) {
+              $artifactList += ","
+            }
+            $artifactList += $artifact
+          }
+          echo "ARTIFACTS=$artifactList" >> $env:GITHUB_ENV
+      - name: Delete (Existing) Releases
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          delete_release: true
+          delete_draft_release: true
+      - name: Release Artifacts
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: ${{ steps.artifacts.outputs.ARTIFACTS }}
+          prerelease: true
+          commit: ${{ env.TARGET_BRANCH }}
+          tag: ${{ env.RELEASE_TAG }}
