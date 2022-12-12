@@ -16,6 +16,7 @@ env:
 
 jobs:
   build:
+    name: Build
     runs-on: windows-latest
     steps:
       - name: Checkout Branch
@@ -38,10 +39,9 @@ jobs:
           name: Output
           path: artifacts
   deploy:
+    name: Deploy
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Download Artifacts
         uses: actions/download-artifact@v3
