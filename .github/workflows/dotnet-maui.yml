@@ -16,8 +16,8 @@ env:
   PROJECT_FILE: ActionsPlayground.sln
   WINDOWS_TARGET_FRAMEWORK: net6.0-windows10.0.19041.0
   ANDROID_TARGET_FRAMEWORK: net6.0-android
-  # SIGNING_CERTIFICATE: # certificate.pfx file encoding in base64
-  # SIGNING_KEY: # key string for signing with certificate
+  # SIGNING_CERTIFICATE: # your pfx file encoded in base64 string
+  # SIGNING_KEY: # your key for accessing the certificate
   RELEASE_TAG: DotNetMaui
 
 ### Configuration ###
@@ -109,7 +109,7 @@ jobs:
           name: Output
           path: artifacts
       - name: Delete (Existing) Releases
-        uses: dev-drprasad/delete-tag-and-release@v0.2.1
+        uses: dev-drprasad/delete-tag-and-release@v0.2.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
