@@ -18,7 +18,6 @@ on:
       RELEASE_TAG:
         type: string
         required: true
-    secrets: inherit
 
 ### Configuration ###
 
