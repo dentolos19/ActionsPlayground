@@ -17,11 +17,12 @@ on:
       ANDROID_TARGET_FRAMEWORK:
         type: string
         required: true
+    secrets:
       SIGNING_CERTIFICATE:
-        type: string
+        required: false
         description: your pfx file encoded in base64 string
       SIGNING_KEY:
-        type: string
+        required: false
         description: your key for accessing the certificate
 jobs:
   windowsBuild:
@@ -43,10 +44,10 @@ jobs:
       - id: certificate
         name: Install Signing Certificate
         run: |
-          if (![string]::IsNullOrEmpty("${{ inputs.SIGNING_CERTIFICATE }}") -and ![string]::IsNullOrEmpty("${{ inputs.SIGNING_KEY }}")) {
-            $bytes = [System.Convert]::FromBase64String("${{ inputs.SIGNING_CERTIFICATE }}")
+          if (![string]::IsNullOrEmpty("${{ secrets.SIGNING_CERTIFICATE }}") -and ![string]::IsNullOrEmpty("${{ secrets.SIGNING_KEY }}")) {
+            $bytes = [System.Convert]::FromBase64String("${{ secrets.SIGNING_CERTIFICATE }}")
             [IO.File]::WriteAllBytes("certificate.pfx", $bytes)
-            $password = ConvertTo-SecureString ${{ inputs.SIGNING_KEY }} -AsPlainText
+            $password = ConvertTo-SecureString ${{ secrets.SIGNING_KEY }} -AsPlainText
             Import-PfxCertificate certificate.pfx -CertStoreLocation "Cert:\CurrentUser\My" -Password $password
             $thumbprint = (Get-PfxCertificate Certificate.pfx -Password $password).Thumbprint
             Write-Output -InputObject "SIGNING_THUMBPRINT=$thumbprint" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append

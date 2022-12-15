@@ -17,5 +17,6 @@ jobs:
       RELEASE_TAG: DotNetMaui
       WINDOWS_TARGET_FRAMEWORK: net6.0-windows10.0.19041.0
       ANDROID_TARGET_FRAMEWORK: net6.0-android
-      # SIGNING_CERTIFICATE: # your pfx file encoded in base64 string
-      # SIGNING_KEY: # your key for accessing the certificate
+    # secrets:
+    #  SIGNING_CERTIFICATE: # your pfx file encoded in base64 string
+    #  SIGNING_KEY: # your key for accessing the certificate
