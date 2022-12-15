@@ -1,0 +1,42 @@
+name: Reusable Workflow for Unity Deployment
+on:
+  workflow_call:
+    inputs:
+      TARGET_BRANCH:
+        type: string
+        required: true
+      RELEASE_TAG:
+        type: string
+        required: true
+      PROJECT_DIRECTORY:
+        type: string
+        default: .
+jobs:
+  build:
+    name: Build for WebGL
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.TARGET_BRANCH }}
+          lfs: true
+          submodules: recursive
+      - name: Restore Cache
+        uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-
+      - name: Build Project
+        uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          targetPlatform: WebGL
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Output
+          path: build
