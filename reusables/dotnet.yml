@@ -1,11 +1,3 @@
-name: .NET Deployment
-run-name: ".NET Deployment #${{ github.run_number }}"
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: true
-
-### Configuration ###
-
 on:
   workflow_call:
     inputs:
@@ -18,9 +10,6 @@ on:
       RELEASE_TAG:
         type: string
         required: true
-
-### Configuration ###
-
 jobs:
   build:
     name: Build
