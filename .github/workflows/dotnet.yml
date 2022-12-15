@@ -1,5 +1,5 @@
 name: .NET Deployment
-run-name: ".NET Deployment #${{ github.run_number }}"
+run-name: "${{ github.workflow }} #${{ github.run_number }}"
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
