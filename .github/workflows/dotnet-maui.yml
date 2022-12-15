@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 jobs:
   main:
-    uses: dentolos19/ActionsPlayground/.github/workflows/reusables/dotnet-maui.yml@main
+    uses: dentolos19/ActionsPlayground/.github/workflows/reusables/REUSABLE-dotnet-maui.yml@main
     with:
       TARGET_BRANCH: template/maui # ${{ github.event.repository.default_branch }}
       PROJECT_FILE: ActionsPlayground.sln
