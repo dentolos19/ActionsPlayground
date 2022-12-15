@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 jobs:
   main:
-    uses: dentolos19/ActionsPlayground/reusables/dotnet.yml@main
+    uses: dentolos19/ActionsPlayground/.github/workflows/reusables/dotnet.yml@main
     with:
       TARGET_BRANCH: template/dotnet # ${{ github.event.repository.default_branch }}
       PROJECT_FILE: ActionsPlayground.sln
