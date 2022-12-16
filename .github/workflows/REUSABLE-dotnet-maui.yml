@@ -4,7 +4,7 @@ on:
     inputs:
       TARGET_BRANCH:
         type: string
-        required: true
+        default: ${{ github.event.repository.default_branch }}
       PROJECT_FILE:
         type: string
         required: true

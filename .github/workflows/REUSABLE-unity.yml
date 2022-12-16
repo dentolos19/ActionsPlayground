@@ -4,10 +4,7 @@ on:
     inputs:
       TARGET_BRANCH:
         type: string
-        required: true
-      RELEASE_TAG:
-        type: string
-        required: true
+        default: ${{ github.event.repository.default_branch }}
       PROJECT_DIRECTORY:
         type: string
         default: .
@@ -20,7 +17,7 @@ permissions:
   id-token: write
 jobs:
   build:
-    name: Build
+    name: Build & Deploy
     runs-on: ubuntu-latest
     environment:
       name: GitHub Pages

@@ -12,7 +12,7 @@ jobs:
   main:
     uses: dentolos19/ActionsPlayground/.github/workflows/REUSABLE-dotnet-maui.yml@main
     with:
-      TARGET_BRANCH: template/maui # ${{ github.event.repository.default_branch }}
+      TARGET_BRANCH: template/maui # remove this
       PROJECT_FILE: ActionsPlayground.sln
       RELEASE_TAG: DotNetMaui
       WINDOWS_TARGET_FRAMEWORK: net6.0-windows10.0.19041.0
