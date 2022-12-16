@@ -11,10 +11,17 @@ on:
       PROJECT_DIRECTORY:
         type: string
         default: .
+    secrets:
+      UNITY_LICENSE:
+        required: true
 jobs:
   build:
-    name: Build for WebGL
+    name: Build
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        target: [ StandaloneWindows, Android, WebGL ]
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v3
@@ -34,7 +41,8 @@ jobs:
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          targetPlatform: WebGL
+          targetPlatform: ${{ matrix.target }}
+          projectPath: ${{ inputs.PROJECT_DIRECTORY }}
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
