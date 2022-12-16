@@ -14,14 +14,17 @@ on:
     secrets:
       UNITY_LICENSE:
         required: true
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        target: [ StandaloneWindows, Android, WebGL ]
+    environment:
+      name: GitHub Pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout Branch
         uses: actions/checkout@v3
@@ -41,11 +44,15 @@ jobs:
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          targetPlatform: ${{ matrix.target }}
+          targetPlatform: WebGL
           projectPath: ${{ inputs.PROJECT_DIRECTORY }}
           buildName: ${{ github.event.repository.name }}
+      - name: Setup Pages
+        uses: actions/configure-pages@v2
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-pages-artifact@v1
         with:
-          name: Output
-          path: build
+          path: build/WebGL/${{ github.event.repository.name }}
+      - id: deployment
+        name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
